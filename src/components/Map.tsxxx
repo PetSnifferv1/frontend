@@ -1,0 +1,32 @@
+import React, { useEffect, useRef } from 'react';
+
+interface MapProps {
+  onLocationSelect: (location: { latitude: number; longitude: number }) => void;
+}
+
+const Map: React.FC<MapProps> = ({ onLocationSelect }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (mapRef.current) {
+      const map = new google.maps.Map(mapRef.current, {
+        center: { lat: -24.005833, lng: -46.402778 }, // Praia Grande, São Paulo, Brasil
+        zoom: 12,
+      });
+
+      map.addListener('click', (event: google.maps.MapMouseEvent) => {
+        if (event.latLng) {
+          const location = {
+            latitude: event.latLng.lat(),
+            longitude: event.latLng.lng(),
+          };
+          onLocationSelect(location);
+        }
+      });
+    }
+  }, [onLocationSelect]);
+
+  return <div ref={mapRef} style={{ width: '100%', height: '400px' }} />;
+};
+
+export default Map;
