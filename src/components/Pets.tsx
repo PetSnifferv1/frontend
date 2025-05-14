@@ -418,22 +418,23 @@ const Pets: React.FC = () => {
       status: pet.status,
       description: '',
       location: pet.location,
-      latitude: pet.latitude.toString(),
-      longitude: pet.longitude.toString(),
-      photos: pet.photos,
+      latitude: pet.latitude?.toString() ?? '',
+      longitude: pet.longitude?.toString() ?? '',
+      photos: pet.foto ? [pet.foto] : [],
       cor: pet.cor,
     });
     setImagem(null);
     setSelectedImage(null);
-    setFotoPreview(null);
+    setFotoPreview(pet.foto);
     setLocation({
-      lat: pet.latitude,
-      lng: pet.longitude,
+      lat: pet.latitude ?? 0,
+      lng: pet.longitude ?? 0,
       pais: pet.pais,
       estado: pet.estado,
       cidade: pet.cidade,
       bairro: pet.bairro,
       rua: pet.rua
+      
     });
     setLocationString(pet.location);
     setDatahora(dayjs(pet.datahora));
