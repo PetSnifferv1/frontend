@@ -263,13 +263,7 @@ const Pets: React.FC = () => {
       setRacas(GATO_RACAS);
       setCores(GATO_CORES);
     }
-    // Só limpe se NÃO estiver editando
-    if (!editingPetId) {
-      setFormData(prev => ({ ...prev, cor: '' }));
-      setIsCustomCor(false);
-      setCustomCor('');
-    }
-  }, [tipo, editingPetId]);
+  }, [tipo]);
 
   const handleImagemChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -348,11 +342,22 @@ const Pets: React.FC = () => {
           rua: location?.rua ?? selectedPet.rua ?? '',
           pais: location?.pais ?? selectedPet.pais ?? '',
           estado: location?.estado ?? selectedPet.estado ?? '',
-          latitude: location?.lat ?? selectedPet.latitude,
-          longitude: location?.lng ?? selectedPet.longitude,
-          location: location
-            ? `${location.lat},${location.lng}`
-            : selectedPet.location ?? '',
+          latitude:
+            location && typeof location.lat === 'number' && location.lat !== 0
+              ? location.lat
+              : selectedPet.latitude,
+          longitude:
+            location && typeof location.lng === 'number' && location.lng !== 0
+              ? location.lng
+              : selectedPet.longitude,
+          location:
+            location &&
+            typeof location.lat === 'number' &&
+            typeof location.lng === 'number' &&
+            location.lat !== 0 &&
+            location.lng !== 0
+              ? `${location.lat},${location.lng}`
+              : selectedPet.location ?? '',
         };
       
         // Atualiza foto se o usuário enviou uma nova
@@ -565,59 +570,32 @@ const Pets: React.FC = () => {
 
   const handleOpenAddDialog = () => {
     setEditingPetId(null);
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-  
-    if (!token || !isAuthenticated || !user) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      alert('Você precisa estar logado para cadastrar um pet');
-      navigate('/login', { state: { from: '/pets' } });
-      return;
-    }
-  
-    try {
-      const userData = savedUser ? JSON.parse(savedUser) : null;
-      if (!userData || !userData.id) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        alert('Sessão inválida. Por favor, faça login novamente.');
-        navigate('/login', { state: { from: '/pets' } });
-        return;
-      }
-  
-      // Limpa os campos se NÃO estiver editando
-      setFormData({
-        name: '',
-        type: '',
-        breed: '',
-        status: '',
-        description: '',
-        location: '',
-        latitude: '',
-        longitude: '',
-        photos: [],
-        cor: '',
-      });
-      setImagem(null);
-      setSelectedImage(null);
-      setFotoPreview(null);
-      setLocation(null);
-      setLocationString('');
-      setDatahora(dayjs()); // <-- sempre preenche com data/hora atual ao abrir
-      setTipo('Cachorro');
-      setRaca('');
-      setCustomRaca('');
-      setIsCustomRaca(false);
-  
-      setOpenAddDialog(true);
-    } catch (error) {
-      console.error('Erro ao verificar autenticação:', error);
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      alert('Erro na sessão. Por favor, faça login novamente.');
-      navigate('/login', { state: { from: '/pets' } });
-    }
+    // ...restante do código...
+    setFormData({
+      name: '',
+      type: '',
+      breed: '',
+      status: '',
+      description: '',
+      location: '',
+      latitude: '',
+      longitude: '',
+      photos: [],
+      cor: '',
+    });
+    setImagem(null);
+    setSelectedImage(null);
+    setFotoPreview(null);
+    setLocation(null);
+    setLocationString('');
+    setDatahora(dayjs());
+    setTipo('Cachorro');
+    setRaca('');
+    setCustomRaca('');
+    setIsCustomRaca(false);
+    setIsCustomCor(false);
+    setCustomCor('');
+    setOpenAddDialog(true);
   };
 
   return (
