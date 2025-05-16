@@ -30,12 +30,6 @@ const GATO_RACAS = [
   'Persa', 'Siames', 'Maine Coon', 'Bengal', 'Sphynx', 'Ragdoll', 'British Shorthair', 'Abyssinian', 'Birman', 'Russian Blue'
   // Adicione outras raças de gatos aqui
 ];
-const CACHORRO_CORES = [
-  'Preto', 'Branco', 'Marrom', 'Caramelo', 'Cinza', 'Dourado', 'Bege', 'Tigrado', 'Chocolate', 'Preto e Branco', 'Marrom e Branco'
-];
-const GATO_CORES = [
-  'Preto', 'Branco', 'Cinza', 'Laranja', 'Rajado', 'Tricolor', 'Siamês', 'Azul', 'Creme', 'Tigrado', 'Preto e Branco', 'Cinza e Branco'
-];
 
 interface Pet {
   id: string;
@@ -100,9 +94,6 @@ const Pets: React.FC = () => {
   const [customRaca, setCustomRaca] = useState('');
   const [isCustomRaca, setIsCustomRaca] = useState(false);
   const [racas, setRacas] = useState<string[]>(CACHORRO_RACAS);
-  const [cores, setCores] = useState<string[]>(CACHORRO_CORES);
-  const [isCustomCor, setIsCustomCor] = useState(false);
-  const [customCor, setCustomCor] = useState('');
   const [location, setLocation] = useState<Location | null>(null);
   const [locationString, setLocationString] = useState<string>('');
   const [name, setName] = useState('');
@@ -115,7 +106,6 @@ const Pets: React.FC = () => {
   
   const handleClose = () => {
     setOpenAddDialog(false);
-    setEditingPetId(null);
     setFormData({
       name: '',
       type: '',
@@ -258,18 +248,10 @@ const Pets: React.FC = () => {
   useEffect(() => {
     if (tipo === 'Cachorro') {
       setRacas(CACHORRO_RACAS);
-      setCores(CACHORRO_CORES);
     } else if (tipo === 'Gato') {
       setRacas(GATO_RACAS);
-      setCores(GATO_CORES);
     }
-    // Só limpe se NÃO estiver editando
-    if (!editingPetId) {
-      setFormData(prev => ({ ...prev, cor: '' }));
-      setIsCustomCor(false);
-      setCustomCor('');
-    }
-  }, [tipo, editingPetId]);
+  }, [tipo]);
 
   const handleImagemChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -297,130 +279,61 @@ const Pets: React.FC = () => {
       reader.readAsDataURL(file);
     }
   };
+
   const handleAddPet = async () => {
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-  
+    
+    console.log('Token ao adicionar pet:', token);
+    console.log('User ao adicionar pet:', user);
+    console.log('isAuthenticated ao adicionar pet:', isAuthenticated);
+    console.log('Saved user ao adicionar pet:', savedUser);
+    
     if (!token || !isAuthenticated || !user) {
+      console.log('Usuário não autenticado ao tentar adicionar pet');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       alert('Você precisa estar logado para cadastrar um pet');
       navigate('/login', { state: { from: '/pets' } });
       return;
     }
-  
+    
     try {
       const userData = savedUser ? JSON.parse(savedUser) : null;
       if (!userData || !userData.id) {
+        console.log('Dados do usuário inválidos ao tentar adicionar pet');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         alert('Sessão inválida. Por favor, faça login novamente.');
         navigate('/login', { state: { from: '/pets' } });
         return;
       }
-  
+
+      if (!imagem) {
+        alert('Por favor, selecione uma imagem');
+        return;
+      }
+
+      if (!location) {
+        alert('Por favor, selecione uma localização no mapa');
+        return;
+      }
+
       if (!formData.name || !formData.type || !formData.breed || !formData.status || !formData.cor || !datahora) {
         alert('Por favor, preencha todos os campos obrigatórios');
         return;
       }
-  
+
       const userId = user?.id;
-  
+
       if (!userId) {
+        console.error('No user ID found');
         alert('Erro ao identificar o usuário. Por favor, faça login novamente.');
         navigate('/login');
         return;
       }
-  
-      console.log('editingPetId:', editingPetId, 'selectedPet:', selectedPet);
-      if (editingPetId && editingPetId !== '' && selectedPet) {
-        // Monta o objeto de atualização
-        const updateData: any = {
-          nome: formData.name,
-          tipo: formData.type,
-          raca: formData.breed,
-          cor: formData.cor,
-          status: formData.status,
-          datahora: datahora ? datahora.format('YYYY-MM-DDTHH:mm:ss') : '',
-          ownerid: userId,
-          cidade: location?.cidade ?? selectedPet.cidade ?? '',
-          bairro: location?.bairro ?? selectedPet.bairro ?? '',
-          rua: location?.rua ?? selectedPet.rua ?? '',
-          pais: location?.pais ?? selectedPet.pais ?? '',
-          estado: location?.estado ?? selectedPet.estado ?? '',
-          latitude: location?.lat ?? selectedPet.latitude,
-          longitude: location?.lng ?? selectedPet.longitude,
-          location: location
-            ? `${location.lat},${location.lng}`
-            : selectedPet.location ?? '',
-        };
-      
-        // Atualiza foto se o usuário enviou uma nova
-        if (imagem) {
-          const formDataToSend = new FormData();
-          formDataToSend.append('file', imagem);
-      
-          const uploadResponse = await axios.post('http://localhost:8080/fileup', formDataToSend, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-      
-          if (uploadResponse.status >= 200 && uploadResponse.status < 300) {
-            updateData.foto = uploadResponse.data.url || uploadResponse.data.filename;
-          } else {
-            alert('Erro ao fazer upload da nova imagem.');
-            return;
-          }
-        } else {
-          // Se não enviou nova imagem, mantenha a foto existente
-          updateData.foto =
-            (selectedPet.foto && selectedPet.foto.trim() !== '')
-              ? selectedPet.foto
-              : (selectedPet.photos && selectedPet.photos[0] && selectedPet.photos[0].trim() !== ''
-                ? selectedPet.photos[0]
-                : '');
-        }
-      
-        // Remove campos undefined, null ou string vazia
-        Object.keys(updateData).forEach(
-          (key) =>
-            updateData[key] === undefined ||
-            updateData[key] === null ||
-            (typeof updateData[key] === 'string' && updateData[key].trim() === '') ?
-              delete updateData[key] : null
-        );
-      
-        // Chama o backend para atualizar
-        const response = await axios.put(
-          `http://localhost:8080/pets/alter-pets/${editingPetId}`,
-          updateData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      
-        if (response.status >= 200 && response.status < 300) {
-          alert('Pet atualizado com sucesso!');
-          fetchPets();
-          setEditingPetId(null);
-          setOpenAddDialog(false);
-        }
-      } else {
-        if (!location) {
-          alert('Por favor, selecione uma localização no mapa');
-          return;
-        }
-        if (!imagem) {
-          alert('Por favor, selecione uma imagem');
-          return;
-        }
-        
-              const formDataToSend = new FormData();
+
+      const formDataToSend = new FormData();
       formDataToSend.append('file', imagem);
       formDataToSend.append('nome', formData.name);
       formDataToSend.append('tipo', formData.type);
@@ -461,14 +374,11 @@ const Pets: React.FC = () => {
         handleClose();
         fetchPets();
       }
-
-      }
     } catch (error) {
-      console.error('Erro ao cadastrar/atualizar pet:', error);
-      alert('Erro ao cadastrar/atualizar pet. Por favor, tente novamente.');
+      console.error('Erro ao cadastrar pet:', error);
+      alert('Erro ao cadastrar pet. Por favor, tente novamente.');
     }
   };
-  
 
   const handleDeletePet = async () => {
     if (!selectedPet) return;
@@ -479,24 +389,27 @@ const Pets: React.FC = () => {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
-        },
+          'Content-Type': 'application/json'
+        }
       });
+
       if (response.ok) {
-       // alert('Pet deletado com sucesso!');
+        alert('Pet excluído com sucesso!');
         setOpenDeleteDialog(false);
         setSelectedPet(null);
         fetchPets();
       } else {
-        alert('Erro ao deletar pet.');
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        alert('Erro ao excluir pet. Por favor, tente novamente.');
       }
     } catch (error) {
-      console.error('Erro ao deletar pet:', error);
-      alert('Erro ao deletar pet. Por favor, tente novamente.');
+      console.error('Erro ao excluir pet:', error);
+      alert('Erro ao excluir pet. Por favor, tente novamente.');
     }
   };
 
   const handleEditPet = (pet: Pet) => {
-    setSelectedPet(pet); // <-- ESSA LINHA É FUNDAMENTAL!
     setEditingPetId(pet.id);
     setFormData({
       name: pet.nome,
@@ -507,12 +420,12 @@ const Pets: React.FC = () => {
       location: pet.location,
       latitude: pet.latitude?.toString() ?? '',
       longitude: pet.longitude?.toString() ?? '',
-      photos: pet.photos ? pet.photos : [],
+      photos: pet.foto ? [pet.foto] : [],
       cor: pet.cor,
     });
     setImagem(null);
     setSelectedImage(null);
-    setFotoPreview(pet.photos && pet.photos.length > 0 ? pet.photos[0] : '');
+    setFotoPreview(pet.foto);
     setLocation({
       lat: pet.latitude ?? 0,
       lng: pet.longitude ?? 0,
@@ -521,6 +434,7 @@ const Pets: React.FC = () => {
       cidade: pet.cidade,
       bairro: pet.bairro,
       rua: pet.rua
+      
     });
     setLocationString(pet.location);
     setDatahora(dayjs(pet.datahora));
@@ -564,52 +478,35 @@ const Pets: React.FC = () => {
   };
 
   const handleOpenAddDialog = () => {
-    setEditingPetId(null);
     const token = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-  
+    
+    console.log('Token ao abrir diálogo:', token);
+    console.log('User ao abrir diálogo:', user);
+    console.log('isAuthenticated ao abrir diálogo:', isAuthenticated);
+    console.log('Saved user ao abrir diálogo:', savedUser);
+    
     if (!token || !isAuthenticated || !user) {
+      console.log('Usuário não autenticado ao tentar abrir diálogo');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       alert('Você precisa estar logado para cadastrar um pet');
       navigate('/login', { state: { from: '/pets' } });
       return;
     }
-  
+    
     try {
       const userData = savedUser ? JSON.parse(savedUser) : null;
       if (!userData || !userData.id) {
+        console.log('Dados do usuário inválidos ao tentar abrir diálogo');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         alert('Sessão inválida. Por favor, faça login novamente.');
         navigate('/login', { state: { from: '/pets' } });
         return;
       }
-  
-      // Limpa os campos se NÃO estiver editando
-      setFormData({
-        name: '',
-        type: '',
-        breed: '',
-        status: '',
-        description: '',
-        location: '',
-        latitude: '',
-        longitude: '',
-        photos: [],
-        cor: '',
-      });
-      setImagem(null);
-      setSelectedImage(null);
-      setFotoPreview(null);
-      setLocation(null);
-      setLocationString('');
-      setDatahora(dayjs()); // <-- sempre preenche com data/hora atual ao abrir
-      setTipo('Cachorro');
-      setRaca('');
-      setCustomRaca('');
-      setIsCustomRaca(false);
-  
+      
+      console.log('Abrindo diálogo de cadastro');
       setOpenAddDialog(true);
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
@@ -681,7 +578,7 @@ const Pets: React.FC = () => {
                 }}>
                   <Box
                     component="img"
-                    src={pet.foto || pet.photos?.[0] || 'https://via.placeholder.com/400x225'}
+                    src={pet.photos?.[0] || pet.foto || 'https://via.placeholder.com/400x225'}
                     alt={pet.nome}
                     onClick={() => setSelectedFoto(pet.photos?.[0] || pet.foto || null)}
                     sx={{
@@ -845,53 +742,22 @@ const Pets: React.FC = () => {
             )}
 
             <TextField
-              select
               fullWidth
               label="Cor"
-              value={isCustomCor ? 'Outra' : formData.cor}
-              onChange={(e) => {
-                if (e.target.value === 'Outra') {
-                  setIsCustomCor(true);
-                  setFormData({ ...formData, cor: '' });
-                } else {
-                  setIsCustomCor(false);
-                  setFormData({ ...formData, cor: e.target.value });
-                }}
-              }
+              value={formData.cor}
+              onChange={(e) => setFormData({ ...formData, cor: e.target.value })}
               required
-            >
-              <MenuItem value="">Selecione a cor</MenuItem>
-              {cores.map((cor) => (
-                <MenuItem key={cor} value={cor}>{cor}</MenuItem>
-              ))}
-              <MenuItem value="Outra">Outra</MenuItem>
-            </TextField>
-
-            {isCustomCor && (
-              <TextField
-                fullWidth
-                label="Outra cor"
-                value={customCor}
-                onChange={(e) => {
-                  setCustomCor(e.target.value);
-                  setFormData({ ...formData, cor: e.target.value });
-                }}
-                required
-              />
-            )}
+            />
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DateTimePicker
                 label="Data e Hora"
-                value={datahora}
+                value={datahora && dayjs(datahora).isValid() ? dayjs(datahora) : null}
                 onChange={(newValue) => setDatahora(newValue ? dayjs(newValue) : null)}
-                ampm={false}
-                slotProps={{
-                  textField: {
-                    margin: 'normal',
-                    required: true,
-                    fullWidth: true,
-                  }
+                slots={{
+                  textField: (props) => (
+                    <TextField {...props} margin="normal" required fullWidth />
+                  ),
                 }}
                 views={['year', 'month', 'day', 'hours', 'minutes']}
                 format="DD/MM/YYYY HH:mm"
@@ -924,7 +790,7 @@ const Pets: React.FC = () => {
                   type="file"
                   hidden
                   onChange={handleImagemChange}
-                //  required={!editingPetId}
+                  required={!editingPetId}
                   accept="image/*"
                 />
               </Button>
@@ -1046,15 +912,13 @@ const Pets: React.FC = () => {
           }
         }}
       >
-        <Box
-          sx={{
-            position: 'relative',
-            p: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: 2,
-            transition: 'all 0.3s ease'
-          }}
-        >
+        <Box sx={{ 
+          position: 'relative', 
+          p: 2,
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: 2,
+          transition: 'all 0.3s ease'
+        }}>
           <IconButton
             onClick={() => setSelectedFoto(null)}
             sx={{

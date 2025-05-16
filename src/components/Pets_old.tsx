@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Map from './Map';
+//import Map from './Map';
 import axios from 'axios';
 import { TextField, Button, Container, Typography, Box, MenuItem, Card, CardContent, CardMedia, Grid, IconButton, CircularProgress } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
