@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'Frontend/**'  # Só dispara se houver push no diretório Backend - Execc
-      - 'frontend/**'
+      - 'frontend/**'  # Só dispara se houver push no diretório Backend - Execc
       - '.github/workflows/deploy-frontend.yml'
 
 jobs:
