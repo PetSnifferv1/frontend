@@ -205,7 +205,7 @@ const Pets: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/pets/my-pets?ownerid=${userId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/my-pets?ownerid=${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -365,7 +365,7 @@ const Pets: React.FC = () => {
           const formDataToSend = new FormData();
           formDataToSend.append('file', imagem);
       
-          const uploadResponse = await axios.post('http://localhost:8080/fileup', formDataToSend, {
+          const uploadResponse = await axios.post(`${import.meta.env.VITE_API_URL}/fileup`, formDataToSend, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
@@ -399,7 +399,7 @@ const Pets: React.FC = () => {
       
         // Chama o backend para atualizar
         const response = await axios.put(
-          `http://localhost:8080/pets/alter-pets/${editingPetId}`,
+          `${import.meta.env.VITE_API_URL}/pets/alter-pets/${editingPetId}`,
           updateData,
           {
             headers: {
@@ -454,7 +454,7 @@ const Pets: React.FC = () => {
         rua: location.rua
       });
 
-      const response = await axios.post('http://localhost:8080/fileup', formDataToSend, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/fileup`, formDataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -480,7 +480,7 @@ const Pets: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:8080/pets/delete-pets/${selectedPet.id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/delete-pets/${selectedPet.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

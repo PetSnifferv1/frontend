@@ -53,7 +53,7 @@ const SearchByLocation: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/pets/search-by-location?lat=${latitude}&lng=${longitude}&radius=${radius}`
+        `${import.meta.env.VITE_API_URL}/pets/search-by-location?lat=${latitude}&lng=${longitude}&radius=${radius}`
       );
       if (response.ok) {
         const data = await response.json();

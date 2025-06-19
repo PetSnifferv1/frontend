@@ -33,7 +33,7 @@ const PublicPets: React.FC = () => {
   const fetchPets = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/pets/public-pets');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/public-pets`);
       if (response.ok) {
         const data = await response.json();
         console.log('Dados recebidos do backend:', data);
