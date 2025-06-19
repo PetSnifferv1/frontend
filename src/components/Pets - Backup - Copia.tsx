@@ -195,7 +195,7 @@ const Pets: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8080/pets/my-pets?ownerid=${userId}`, {
+      const response = await fetch(`VITE_API_URL/pets/my-pets?ownerid=${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
