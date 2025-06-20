@@ -30,7 +30,7 @@ const Header: React.FC = () => {
           <Button 
             color="inherit" 
             component={Link} 
-            to="/public-pets"
+            to="/pets/public-pets"
             className="button-hover"
             sx={{ 
               color: 'var(--text-primary)',
