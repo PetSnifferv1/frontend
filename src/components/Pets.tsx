@@ -365,7 +365,7 @@ const Pets: React.FC = () => {
           const formDataToSend = new FormData();
           formDataToSend.append('file', imagem);
       
-          const uploadResponse = await axios.post(`${import.meta.env.VITE_API_URL}/pets/fileup`, formDataToSend, {
+          const uploadResponse = await axios.post(`${import.meta.env.VITE_API_URL}/fileup`, formDataToSend, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
@@ -454,7 +454,7 @@ const Pets: React.FC = () => {
         rua: location.rua
       });
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/pets/fileup`, formDataToSend, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/fileup`, formDataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',

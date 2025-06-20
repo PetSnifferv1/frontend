@@ -37,7 +37,7 @@ const App: React.FC = () => {
                     </PrivateRoute>
                   }
                 />
-                <Route path="/public-pets" element={<PublicPets />} />
+                <Route path="/pets/public-pets" element={<PublicPets />} />
                 <Route path="/search-by-location" element={<SearchByLocation />} />
               </Routes>
             </Box>
