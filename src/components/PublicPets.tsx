@@ -29,11 +29,15 @@ const PublicPets: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedFoto, setSelectedFoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  console.log(import.meta.env.VITE_API_URL);
+  
 
   const fetchPets = async () => {
+    console.log(import.meta.env.VITE_API_URL);
     try {
       setLoading(true);
       const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/public-pets`);
+      
       if (response.ok) {
         const data = await response.json();
         console.log('Dados recebidos do backend:', data);
