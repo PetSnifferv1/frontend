@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         // Validate token with backend
-        const response = await fetch('${import.meta.env.VITE_API_URL}/auth/validate', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/validate`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -97,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('Request body:', requestBody);
       
-      const response = await fetch('${import.meta.env.VITE_API_URL}/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('Attempting registration with:', { name, email, password });
       
-      const response = await fetch('${import.meta.env.VITE_API_URL}/auth/register', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
