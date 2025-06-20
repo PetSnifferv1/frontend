@@ -34,7 +34,7 @@ const Header: React.FC = () => {
             className="button-hover"
             sx={{ 
               color: 'var(--text-primary)',
-              backgroundColor: location.pathname === '/public-pets' ? 'rgba(0, 0, 0, 0.04)' : 'transparent'
+              backgroundColor: location.pathname === '/pets/public-pets' ? 'rgba(0, 0, 0, 0.04)' : 'transparent'
             }}
           >
             Pets Públicos

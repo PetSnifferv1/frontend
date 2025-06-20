@@ -50,7 +50,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button
                 component={RouterLink}
-                to="/public-pets"
+                to="/pets/public-pets"
                 color="inherit"
                 sx={{ 
                   '&:hover': { 

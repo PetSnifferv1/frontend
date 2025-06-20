@@ -29,7 +29,7 @@ const Home: React.FC = () => {
       description: 'Veja todos os pets cadastrados e ajude a encontrá-los.',
       icon: <SearchIcon sx={{ fontSize: 40 }} />,
       action: 'Explorar',
-      to: '/public-pets',
+      to: '/pets/public-pets',
     },
   ];
 
