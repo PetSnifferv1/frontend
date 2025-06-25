@@ -14,6 +14,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import PetsIcon from '@mui/icons-material/Pets';
 import { Add as AddIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import SearchIcon from '@mui/icons-material/Search';
 
 import './Pets.css';
 import MapComponent from './MapComponent';
@@ -598,6 +599,10 @@ const Pets: React.FC = () => {
     setOpenAddDialog(true);
   };
 
+  const handleBuscarSimilares = (petId: string) => {
+    navigate(`/pets/similares/${petId}`);
+  };
+
   return (
     <div className="fade-in">
       <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
@@ -737,6 +742,15 @@ const Pets: React.FC = () => {
                       <DeleteIcon />
                     </IconButton>
                   </Box>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<SearchIcon />}
+                    onClick={() => handleBuscarSimilares(pet.id)}
+                    sx={{ mt: 1, borderRadius: '30px', boxShadow: 2, fontWeight: 600, letterSpacing: 1 }}
+                  >
+                    Encontrar por IA
+                  </Button>
                 </Box>
               </Box>
             ))}
@@ -834,8 +848,8 @@ const Pets: React.FC = () => {
                 } else {
                   setIsCustomCor(false);
                   setFormData({ ...formData, cor: e.target.value });
-                }}
-              }
+                }
+              }}
               required
             >
               <MenuItem value="">Selecione a cor</MenuItem>

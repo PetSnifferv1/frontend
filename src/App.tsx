@@ -14,6 +14,7 @@ import PrivateRoute from '@/components/PrivateRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import { Box } from '@mui/material';
+import PetsSimilares from '@/components/PetsSimilares';
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,7 @@ const App: React.FC = () => {
                 />
                 <Route path="/pets/public-pets" element={<PublicPets />} />
                 <Route path="/search-by-location" element={<SearchByLocation />} />
+                <Route path="/pets/similares/:petId" element={<PetsSimilares />} />
               </Routes>
             </Box>
           </Box>

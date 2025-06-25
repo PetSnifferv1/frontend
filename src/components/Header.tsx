@@ -1,12 +1,23 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import PetsIcon from '@mui/icons-material/Pets';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header: React.FC = () => {
   const { isAuthenticated, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleBuscarSimilares = async (petId: string) => {
+    try {
+      // Redireciona para a página de similares, passando o id do pet
+      navigate(`/pets/similares/${petId}`);
+    } catch (error) {
+      alert('Erro ao buscar animais similares.');
+      console.error(error);
+    }
+  };
 
   return (
     <AppBar position="fixed" sx={{ 
