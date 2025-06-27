@@ -28,7 +28,7 @@ interface Pet {
 const PetsSimilares: React.FC = () => {
   const { petId } = useParams<{ petId: string }>();
 
-  const maxDistance = 0.18;
+  const maxDistance = 0.2;
 
   const limite = 10;
   const [similares, setSimilares] = useState<Pet[]>([]);
