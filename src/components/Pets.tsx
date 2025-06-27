@@ -249,6 +249,13 @@ const Pets: React.FC = () => {
         cor: pet.cor
       }));
 
+      // Ordena todos os pets por data de cadastro (mais recente primeiro)
+      mappedPets.sort((a: Pet, b: Pet) => {
+        const dateA = new Date(a.datahora).getTime();
+        const dateB = new Date(b.datahora).getTime();
+        return dateB - dateA;
+      });
+
       // Detecta novo pet
       if (lastPetsIds.length > 0 && mappedPets.length > lastPetsIds.length) {
         const newPet = mappedPets.find((p: Pet) => !lastPetsIds.includes(p.id));
