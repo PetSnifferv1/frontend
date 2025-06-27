@@ -113,6 +113,9 @@ const Pets: React.FC = () => {
   const [status, setStatus] = useState('');
   const [datahora, setDatahora] = useState<Dayjs | null>(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [iaProcessing, setIaProcessing] = useState<{[petId: string]: boolean}>({});
+  const [iaTimer, setIaTimer] = useState<{[petId: string]: number}>({});
+  const [lastPetsIds, setLastPetsIds] = useState<string[]>([]);
   
   const handleClose = () => {
     setOpenAddDialog(false);
@@ -246,8 +249,20 @@ const Pets: React.FC = () => {
         cor: pet.cor
       }));
 
+      // Detecta novo pet
+      if (lastPetsIds.length > 0 && mappedPets.length > lastPetsIds.length) {
+        const newPet = mappedPets.find((p: Pet) => !lastPetsIds.includes(p.id));
+        if (newPet) {
+          setIaProcessing(prev => ({ ...prev, [newPet.id]: true }));
+          setIaTimer(prev => ({ ...prev, [newPet.id]: 100 }));
+          // Ordena para o novo pet ficar no topo
+          mappedPets.sort((a: Pet, b: Pet) => (a.id === newPet.id ? -1 : b.id === newPet.id ? 1 : 0));
+        }
+      }
+
       console.log('Mapped pets:', mappedPets);
       setPets(mappedPets);
+      setLastPetsIds(mappedPets.map((p: Pet) => p.id));
     } catch (error) {
       console.error('Error fetching pets:', error);
       alert('Failed to fetch pets. Please try again.');
@@ -603,6 +618,37 @@ const Pets: React.FC = () => {
     navigate(`/pets/similares/${petId}`);
   };
 
+  // Função para iniciar o processamento IA
+  const startIaProcessing = (petId: string) => {
+    setIaProcessing(prev => ({ ...prev, [petId]: true }));
+    setIaTimer(prev => ({ ...prev, [petId]: 150 })); // 2,5 minutos = 150 segundos
+  };
+
+  // Efeito para controlar o timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIaTimer(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(petId => {
+          if (iaProcessing[petId] && updated[petId] > 0) {
+            updated[petId] = updated[petId] - 1;
+          }
+        });
+        return updated;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [iaProcessing]);
+
+  // Efeito para reabilitar o botão quando o timer chega a zero
+  useEffect(() => {
+    Object.keys(iaTimer).forEach(petId => {
+      if (iaProcessing[petId] && iaTimer[petId] === 0) {
+        setIaProcessing(prev => ({ ...prev, [petId]: false }));
+      }
+    });
+  }, [iaTimer, iaProcessing]);
+
   return (
     <div className="fade-in">
       <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
@@ -746,10 +792,21 @@ const Pets: React.FC = () => {
                     variant="contained"
                     color="secondary"
                     startIcon={<SearchIcon />}
-                    onClick={() => handleBuscarSimilares(pet.id)}
-                    sx={{ mt: 1, borderRadius: '30px', boxShadow: 2, fontWeight: 600, letterSpacing: 1 }}
+                    onClick={() => {
+                      startIaProcessing(pet.id);
+                      handleBuscarSimilares(pet.id);
+                    }}
+                    disabled={!!iaProcessing[pet.id]}
+                    sx={{ mt: 1, borderRadius: '30px', boxShadow: 2, fontWeight: 600, letterSpacing: 1, position: 'relative', minWidth: 200 }}
                   >
-                    Encontrar por IA
+                    {iaProcessing[pet.id] ? (
+                      <>
+                        <CircularProgress size={20} color="inherit" sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        processando IA{iaTimer[pet.id] ? ` (${Math.floor(iaTimer[pet.id]/60)}:${(iaTimer[pet.id]%60).toString().padStart(2,'0')})` : ''}
+                      </>
+                    ) : (
+                      'Encontrar por IA'
+                    )}
                   </Button>
                 </Box>
               </Box>
