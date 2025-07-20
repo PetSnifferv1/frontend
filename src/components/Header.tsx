@@ -5,7 +5,7 @@ import PetsIcon from '@mui/icons-material/Pets';
 import { useAuth } from '../contexts/AuthContext';
 
 const Header: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, deleteAccount } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -16,6 +16,17 @@ const Header: React.FC = () => {
     } catch (error) {
       alert('Erro ao buscar animais similares.');
       console.error(error);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.')) {
+      try {
+        await deleteAccount();
+        navigate('/login');
+      } catch (err) {
+        alert('Erro ao excluir conta.');
+      }
     }
   };
 
@@ -80,14 +91,34 @@ const Header: React.FC = () => {
 
         <Box>
           {isAuthenticated ? (
-            <Button 
-              color="inherit" 
-              onClick={logout}
-              className="button-hover"
-              sx={{ color: 'var(--text-primary)' }}
-            >
-              Sair
-            </Button>
+            <>
+              <Button 
+                color="inherit" 
+                component={Link}
+                to="/chat"
+                className="button-hover"
+                sx={{ color: 'var(--text-primary)', mr: 2 }}
+              >
+                Chat
+              </Button>
+              <Button 
+                color="inherit" 
+                component={Link} 
+                to="/profile"
+                className="button-hover"
+                sx={{ color: 'var(--text-primary)', mr: 2 }}
+              >
+                Perfil
+              </Button>
+              <Button 
+                color="inherit" 
+                onClick={logout}
+                className="button-hover"
+                sx={{ color: 'var(--text-primary)' }}
+              >
+                Sair
+              </Button>
+            </>
           ) : (
             <Button 
               color="inherit" 

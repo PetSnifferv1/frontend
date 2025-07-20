@@ -383,60 +383,79 @@ const Pets: React.FC = () => {
               : selectedPet.location ?? '',
         };
       
-        // Atualiza foto se o usuário enviou uma nova
         if (imagem) {
+          // Atualização COM nova foto: multipart para alter-pet-foto
           const formDataToSend = new FormData();
           formDataToSend.append('file', imagem);
-      
-          const uploadResponse = await axios.post(`${import.meta.env.VITE_API_URL}/pets/fileup`, formDataToSend, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-      
-          if (uploadResponse.status >= 200 && uploadResponse.status < 300) {
-            updateData.foto = uploadResponse.data.url || uploadResponse.data.filename;
-          } else {
-            alert('Erro ao fazer upload da nova imagem.');
-            return;
+          formDataToSend.append('nome', updateData.nome);
+          formDataToSend.append('tipo', updateData.tipo);
+          formDataToSend.append('raca', updateData.raca);
+          formDataToSend.append('cor', updateData.cor);
+          formDataToSend.append('status', updateData.status);
+          formDataToSend.append('datahora', updateData.datahora);
+          formDataToSend.append('ownerid', updateData.ownerid);
+          formDataToSend.append('cidade', updateData.cidade);
+          formDataToSend.append('bairro', updateData.bairro);
+          formDataToSend.append('rua', updateData.rua);
+          formDataToSend.append('pais', updateData.pais);
+          formDataToSend.append('estado', updateData.estado);
+          formDataToSend.append('location', updateData.location);
+          // latitude/longitude não são obrigatórios no backend, mas pode enviar se quiser
+          // formDataToSend.append('latitude', updateData.latitude);
+          // formDataToSend.append('longitude', updateData.longitude);
+
+          const response = await axios.put(
+            `${import.meta.env.VITE_API_URL}/pets/alter-pet-foto/${editingPetId}`,
+            formDataToSend,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          );
+
+          if (response.status >= 200 && response.status < 300) {
+            alert('Pet atualizado com sucesso!');
+            fetchPets();
+            setEditingPetId(null);
+            setOpenAddDialog(false);
           }
         } else {
-          // Se não enviou nova imagem, mantenha a foto existente
+          // Atualização SEM nova foto: JSON para alter-pets
           updateData.foto =
             (selectedPet.foto && selectedPet.foto.trim() !== '')
               ? selectedPet.foto
               : (selectedPet.photos && selectedPet.photos[0] && selectedPet.photos[0].trim() !== ''
                 ? selectedPet.photos[0]
                 : '');
-        }
-      
-        // Remove campos undefined, null ou string vazia
-        Object.keys(updateData).forEach(
-          (key) =>
-            updateData[key] === undefined ||
-            updateData[key] === null ||
-            (typeof updateData[key] === 'string' && updateData[key].trim() === '') ?
-              delete updateData[key] : null
-        );
-      
-        // Chama o backend para atualizar
-        const response = await axios.put(
-          `${import.meta.env.VITE_API_URL}/pets/alter-pets/${editingPetId}`,
-          updateData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
+
+          // Remove campos undefined, null ou string vazia
+          Object.keys(updateData).forEach(
+            (key) =>
+              updateData[key] === undefined ||
+              updateData[key] === null ||
+              (typeof updateData[key] === 'string' && updateData[key].trim() === '') ?
+                delete updateData[key] : null
+          );
+
+          const response = await axios.put(
+            `${import.meta.env.VITE_API_URL}/pets/alter-pets/${editingPetId}`,
+            updateData,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (response.status >= 200 && response.status < 300) {
+            alert('Pet atualizado com sucesso!');
+            fetchPets();
+            setEditingPetId(null);
+            setOpenAddDialog(false);
           }
-        );
-      
-        if (response.status >= 200 && response.status < 300) {
-          alert('Pet atualizado com sucesso!');
-          fetchPets();
-          setEditingPetId(null);
-          setOpenAddDialog(false);
         }
       } else {
         if (!location) {

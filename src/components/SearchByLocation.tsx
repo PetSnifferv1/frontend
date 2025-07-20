@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import DeleteIcon from '@mui/icons-material/Delete';
 import './Pets.css';
 import CloseIcon from '@mui/icons-material/Close';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Pet {
   id: string;
@@ -16,6 +18,7 @@ interface Pet {
   datahora: string;
   foto: string;
   location: string;
+  ownerid: string; // Added ownerid to the interface
 }
 
 const SearchByLocation: React.FC = () => {
@@ -25,6 +28,9 @@ const SearchByLocation: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedFoto, setSelectedFoto] = useState<string | null>(null);
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const getStatusLabel = (status: string) => {
     return status === 'LOST' ? 'Perdido' : 'Achado';
@@ -77,33 +83,17 @@ const SearchByLocation: React.FC = () => {
       </Typography>
       
       <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <TextField
-          fullWidth
-          label="Latitude"
-          value={latitude}
-          disabled
-          variant="outlined"
-          sx={{ maxWidth: 200 }}
-        />
-        <TextField
-          fullWidth
-          label="Longitude"
-          value={longitude}
-          disabled
-          variant="outlined"
-          sx={{ maxWidth: 200 }}
-        />
         <Button
           variant="contained"
           onClick={() => setIsMapOpen(true)}
-          sx={{ minWidth: 120 }}
+          sx={{ minWidth: 180 }}
         >
-          Selecionar no Mapa
+          Selecionar Localização no Mapa
         </Button>
         <Button
           variant="contained"
           onClick={handleSearch}
-          disabled={loading}
+          disabled={loading || !latitude || !longitude}
           sx={{ minWidth: 120 }}
         >
           {loading ? <CircularProgress size={24} /> : "Buscar"}
@@ -210,13 +200,30 @@ const SearchByLocation: React.FC = () => {
                 <span>📅</span>
                 <span>{dayjs(pet.datahora).format("DD/MM/YYYY")}</span>
               </Typography>
-              {pet.location && (
+              {(pet.pais || pet.estado || pet.cidade || pet.bairro) && (
                 <Typography className="pet-details">
                   <span>📍</span>
-                  <span>{getLocationDescription(pet.location)}</span>
+                  <span>
+                    {[
+                      pet.bairro,
+                      pet.cidade,
+                      pet.estado,
+                      pet.pais
+                    ].filter(Boolean).join(' - ')}
+                  </span>
                 </Typography>
               )}
             </Box>
+            {user?.id !== pet.ownerid && (
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ mt: 1 }}
+                onClick={() => navigate(`/chat?userId=${pet.ownerid}`)}
+              >
+                Quero conversar
+              </Button>
+            )}
           </Box>
         ))}
       </Box>

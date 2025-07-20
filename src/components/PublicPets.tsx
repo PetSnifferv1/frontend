@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, IconButton, Typography, Box, Container, CircularProgress } from '@mui/material';
+import { Dialog, IconButton, Typography, Box, Container, CircularProgress, Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import './Pets.css';
 import dayjs from "dayjs";
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Pet {
   id: string;
@@ -23,6 +25,7 @@ interface Pet {
   bairro?: string;
   rua?: string;
   photos: string[];
+  ownerid: string; // Added ownerid to the interface
 }
 
 const PublicPets: React.FC = () => {
@@ -57,6 +60,9 @@ const PublicPets: React.FC = () => {
   useEffect(() => {
     fetchPets();
   }, []);
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -141,6 +147,16 @@ const PublicPets: React.FC = () => {
                     ].filter(Boolean).join(' - ')}
                   </span>
                 </Typography>
+              )}
+              {user?.id !== pet.ownerid && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ mt: 1 }}
+                  onClick={() => navigate(`/chat?userId=${pet.ownerid}`)}
+                >
+                  Quero conversar
+                </Button>
               )}
             </Box>
           </Box>

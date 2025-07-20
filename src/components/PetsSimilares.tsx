@@ -4,6 +4,7 @@ import { Container, Typography, Box, Button, CircularProgress, Dialog, IconButto
 import CloseIcon from '@mui/icons-material/Close';
 import './Pets.css';
 import dayjs from 'dayjs';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Pet {
   id: string;
@@ -23,11 +24,12 @@ interface Pet {
   bairro?: string;
   rua?: string;
   photos: string[];
+  ownerid: string;
 }
 
 const PetsSimilares: React.FC = () => {
   const { petId } = useParams<{ petId: string }>();
-
+  const {tipo } = useParams<{tipo: string}>();
   const maxDistance = 0.2;
 
   const limite = 10;
@@ -35,6 +37,7 @@ const PetsSimilares: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFoto, setSelectedFoto] = useState<string | null>(null);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
@@ -43,7 +46,7 @@ const PetsSimilares: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/similares/${petId}?maxDistance=${maxDistance}&limite=${limite}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/similares/${petId}?maxDistance=${maxDistance}&limite=${limite}&tipo=${tipo}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -146,6 +149,16 @@ const PetsSimilares: React.FC = () => {
                       ].filter(Boolean).join(' - ')}
                     </span>
                   </Typography>
+                )}
+                {user?.id !== pet.ownerid && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 1 }}
+                    onClick={() => navigate(`/chat?userId=${pet.ownerid}`)}
+                  >
+                    Quero conversar
+                  </Button>
                 )}
               </Box>
             </Box>

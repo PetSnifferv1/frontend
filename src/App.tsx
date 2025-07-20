@@ -15,6 +15,8 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import { Box } from '@mui/material';
 import PetsSimilares from '@/components/PetsSimilares';
+import Profile from '@/components/Profile';
+import Chat from '@/components/Chat';
 
 const App: React.FC = () => {
   return (
@@ -41,6 +43,22 @@ const App: React.FC = () => {
                 <Route path="/pets/public-pets" element={<PublicPets />} />
                 <Route path="/search-by-location" element={<SearchByLocation />} />
                 <Route path="/pets/similares/:petId" element={<PetsSimilares />} />
+                <Route
+                  path="/profile"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/chat"
+                  element={
+                    <PrivateRoute>
+                      <Chat />
+                    </PrivateRoute>
+                  }
+                />
               </Routes>
             </Box>
           </Box>
