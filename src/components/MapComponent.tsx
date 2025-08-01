@@ -32,7 +32,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ onLocationSelect, initialLo
 
   // Use useJsApiLoader instead of LoadScript
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string,
     libraries: ["places"]
   });
 
