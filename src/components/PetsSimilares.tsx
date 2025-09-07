@@ -30,7 +30,7 @@ interface Pet {
 const PetsSimilares: React.FC = () => {
   const { petId } = useParams<{ petId: string }>();
   const {tipo } = useParams<{tipo: string}>();
-  const maxDistance = Number(import.meta.env.VITE_MAX_DISTANCE) || 0.2;
+  const maxDistance = Number(import.meta.env.VITE_MAX_DISTANCE) || 0.3;
 
   const limite = 10;
   const [similares, setSimilares] = useState<Pet[]>([]);

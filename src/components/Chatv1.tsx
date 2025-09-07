@@ -6,7 +6,6 @@ import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
-import { useTheme } from '@mui/material/styles'; // Importar useTheme
 
 interface User {
   id: string;
@@ -33,30 +32,18 @@ const Chat: React.FC = () => {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Estado para erros
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const theme = useTheme(); // Usar o hook useTheme
-
-  // Função auxiliar para tratar respostas da API
-  const handleApiResponse = async (res: Response) => {
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || 'Ocorreu um erro desconhecido.');
-    }
-    return res.json();
-  };
 
   // Defina fetchConversations no topo do componente
   const fetchConversations = async () => {
     setLoadingConversations(true);
-    setError(null); // Limpa erros anteriores
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/messages', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data: Message[] = await handleApiResponse(res);
+      const data: Message[] = await res.json();
       // Extrai usuários únicos das mensagens (enviadas e recebidas)
       const users: { [id: string]: User } = {};
       data.forEach(msg => {
@@ -64,70 +51,65 @@ const Chat: React.FC = () => {
         if (msg.receiver.id !== user.id) users[msg.receiver.id] = msg.receiver;
       });
       setConversations(Object.values(users));
-    } catch (e: any) {
-      console.error("Erro ao buscar conversas:", e);
-      setError(e.message || "Não foi possível carregar as conversas.");
+    } catch (e) {
+      // erro
     }
     setLoadingConversations(false);
   };
 
-  // Busca conversas (usuários únicos) - Unificado
+  // Busca conversas (usuários únicos)
   useEffect(() => {
     fetchConversations();
+  }, [user.id]);
+
+  // useEffect para atualizar inbox ao abrir o chat
+  useEffect(() => {
+    fetchConversations();
+    // eslint-disable-next-line
   }, [user.id]);
 
   // useEffect para abrir conversa automaticamente se houver userId na query
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const userId = params.get('userId');
-
-    // Só tenta selecionar/buscar se houver userId na URL e for diferente do usuário logado
-    // E se o usuário selecionado atualmente não for o mesmo da URL
-    if (userId && userId !== user.id && (!selectedUser || selectedUser.id !== userId)) {
+    if (userId && (!selectedUser || selectedUser.id !== userId)) {
+      // Tenta encontrar o usuário na lista de conversas
       const found = conversations.find(u => u.id === userId);
       if (found) {
         setSelectedUser(found);
-      } else {
-        // Busca usuário pelo id se não estiver na lista e não for o próprio usuário logado
+      } else if (userId !== user.id) {
+        // Busca usuário pelo id se não estiver na lista
         fetch(`/auth/user/${userId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
-          .then(res => {
-            if (!res.ok) throw new Error("Usuário não encontrado.");
-            return res.json();
-          })
+          .then(res => res.json())
           .then(u => {
             if (u && u.id) setSelectedUser(u);
-          })
-          .catch(e => {
-            console.error("Erro ao buscar usuário da URL:", e);
-            setError(e.message || "Não foi possível encontrar o usuário da URL.");
           });
       }
     }
-  }, [location.search, conversations, selectedUser, user.id]); // Dependências corrigidas
+    // eslint-disable-next-line
+  }, [location.search, conversations]);
 
   // Função para buscar mensagens da conversa selecionada
   const fetchMessages = async (showLoading = false) => {
     if (!selectedUser) return;
     if (showLoading) setLoadingMessages(true);
-    setError(null); // Limpa erros anteriores
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`/messages/conversation/${selectedUser.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data: Message[] = await handleApiResponse(res);
+      const data: Message[] = await res.json();
       setMessages(data.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()));
-    } catch (e: any) {
-      console.error("Erro ao buscar mensagens:", e);
-      setError(e.message || "Não foi possível carregar as mensagens.");
+    } catch (e) {
+      // erro
     }
     if (showLoading) setLoadingMessages(false);
     setInitialLoad(false);
   };
 
-  // Atualização automática das mensagens (polling) - Manter por enquanto, mas idealmente substituir por WebSockets
+  // Atualização automática das mensagens (polling)
   useEffect(() => {
     if (!selectedUser) return;
     setInitialLoad(true);
@@ -140,13 +122,12 @@ const Chat: React.FC = () => {
 
   // Scroll automático para última mensagem
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); // Otimizado
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = async () => {
     if (!message.trim() || !selectedUser) return;
     setSending(true);
-    setError(null); // Limpa erros anteriores
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/messages', {
@@ -159,27 +140,20 @@ const Chat: React.FC = () => {
       });
       if (res.ok) {
         setMessage('');
-        const data: Message = await handleApiResponse(res);
+        // Recarrega mensagens
+        const data: Message = await res.json();
         setMessages(prev => [...prev, data]);
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Falha ao enviar mensagem.');
       }
-    } catch (e: any) {
-      console.error("Erro ao enviar mensagem:", e);
-      setError(e.message || "Não foi possível enviar a mensagem.");
+    } catch (e) {
+      // erro
     }
     setSending(false);
   };
 
   return (
-    <Box display="flex" height="80vh" bgcolor={theme.palette.background.default} borderRadius={2} boxShadow={2}>
+    <Box display="flex" height="80vh" bgcolor="#f7f7fa" borderRadius={2} boxShadow={2}>
       {/* Inbox */}
-      <Paper sx={{
-        width: 320, minWidth: 220, maxWidth: 360,
-        borderRight: `1px solid ${theme.palette.divider}`, // Cor do tema
-        display: 'flex', flexDirection: 'column'
-      }}>
+      <Paper sx={{ width: 320, minWidth: 220, maxWidth: 360, borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column' }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" sx={{ p: 2, pb: 1 }}>
           <Typography variant="h6" fontWeight={600}>Conversas</Typography>
           <IconButton size="small" onClick={fetchConversations}><RefreshIcon /></IconButton>
@@ -202,13 +176,13 @@ const Chat: React.FC = () => {
                   alignItems="flex-start"
                 >
                   <ListItemAvatar>
-                    <Badge color="primary" variant="dot" /* invisible={true} removido */>
-                      <Avatar>{conv.login ? conv.login.charAt(0).toUpperCase() : '?'}</Avatar>
+                    <Badge color="primary" variant="dot" invisible={true}>
+                      <Avatar>{conv.login?.charAt(0).toUpperCase()}</Avatar>
                     </Badge>
                   </ListItemAvatar>
                   <ListItemText
-                    primary={conv.login || "Usuário Desconhecido"}
-                    secondary={conv.email || "Email não disponível"}
+                    primary={conv.login}
+                    secondary={conv.email}
                   />
                 </ListItem>
               ))}
@@ -221,17 +195,12 @@ const Chat: React.FC = () => {
       <Box flex={1} display="flex" flexDirection="column" position="relative">
         {selectedUser ? (
           <>
-            <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar>{selectedUser.login ? selectedUser.login.charAt(0).toUpperCase() : '?'}</Avatar>
-              <Typography variant="subtitle1" fontWeight={600}>{selectedUser.login || "Usuário Desconhecido"}</Typography>
-              <Typography variant="body2" color="text.secondary">{selectedUser.email || "Email não disponível"}</Typography>
+            <Box sx={{ p: 2, borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Avatar>{selectedUser.login?.charAt(0).toUpperCase()}</Avatar>
+              <Typography variant="subtitle1" fontWeight={600}>{selectedUser.login}</Typography>
+              <Typography variant="body2" color="text.secondary">{selectedUser.email}</Typography>
             </Box>
-            {error && (
-              <Box sx={{ p: 2, color: "error.main", bgcolor: theme.palette.error.light, borderRadius: 1, m: 2 }}>
-                <Typography variant="body2">{error}</Typography>
-              </Box>
-            )}
-            <Box flex={1} p={2} overflow="auto" display="flex" flexDirection="column" gap={1} bgcolor={theme.palette.background.paper}>
+            <Box flex={1} p={2} overflow="auto" display="flex" flexDirection="column" gap={1} bgcolor="#f9f9fb">
               {initialLoad ? (
                 <Box flex={1} display="flex" justifyContent="center" alignItems="center"><CircularProgress /></Box>
               ) : (
@@ -240,18 +209,18 @@ const Chat: React.FC = () => {
                 ) : (
                   messages.map((msg) => {
                     const isMine = String(msg.sender.id) === String(user.id);
-                    // console.log('[DEBUG] user.id:', user.id, 'msg.sender.id:', msg.sender.id, 'msg.receiver.id:', msg.receiver.id, 'isMine:', isMine); // Removido
+                    console.log('[DEBUG] user.id:', user.id, 'msg.sender.id:', msg.sender.id, 'msg.receiver.id:', msg.receiver.id, 'isMine:', isMine);
                     return (
                       <Box
                         key={msg.id}
                         alignSelf={isMine ? 'flex-end' : 'flex-start'}
-                        bgcolor={isMine ? theme.palette.primary.main : theme.palette.grey[200]}
-                        color={isMine ? theme.palette.common.white : theme.palette.common.black}
+                        bgcolor={isMine ? 'primary.main' : 'grey.200'}
+                        color={isMine ? 'white' : 'black'}
                         px={2} py={1} borderRadius={3} maxWidth="70%" mb={0.5}
                         boxShadow={isMine ? 2 : 1}
                       >
                         <Typography variant="body2">{msg.content}</Typography>
-                        <Typography variant="caption" color={isMine ? 'rgba(255,255,255,0.7)' : theme.palette.text.secondary}>
+                        <Typography variant="caption" color={isMine ? 'rgba(255,255,255,0.7)' : 'text.secondary'}>
                           {new Date(msg.timestamp).toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
                         </Typography>
                       </Box>
@@ -271,7 +240,7 @@ const Chat: React.FC = () => {
                 onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
                 disabled={sending}
                 size="small"
-                // autoFocus // Removido
+                autoFocus
               />
               <IconButton color="primary" onClick={handleSend} disabled={sending || !message.trim()}>
                 <SendIcon />
@@ -289,5 +258,3 @@ const Chat: React.FC = () => {
 };
 
 export default Chat; 
-
-
