@@ -13,6 +13,10 @@ const resolveApiBaseUrl = () => {
     // Normalize and enforce HTTPS when the page is HTTPS to avoid mixed content
     const pageIsHttps = typeof window !== 'undefined' && window.location?.protocol === 'https:';
     const url = new URL(base, typeof window !== 'undefined' ? window.location.origin : undefined);
+    // If env points to a raw AWS ELB hostname, prefer same-origin to avoid certificate CN errors
+    if (/\.elb\.amazonaws\.com(?:\.|$)/i.test(url.hostname)) {
+      return '';
+    }
     if (pageIsHttps && url.protocol === 'http:') {
       url.protocol = 'https:';
     }
