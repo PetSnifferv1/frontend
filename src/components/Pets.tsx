@@ -18,6 +18,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import './Pets.css';
 import MapComponent from './MapComponent';
+import { API_BASE_URL } from '../config/api';
 
 dayjs.extend(customParseFormat); // Adicione o plugin de formatação, se necessário
 
@@ -209,7 +210,7 @@ const Pets: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/my-pets?ownerid=${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/pets/my-pets?ownerid=${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -405,7 +406,7 @@ const Pets: React.FC = () => {
           // formDataToSend.append('longitude', updateData.longitude);
 
           const response = await axios.put(
-            `${import.meta.env.VITE_API_URL}/pets/alter-pet-foto/${editingPetId}`,
+            `${API_BASE_URL}/pets/alter-pet-foto/${editingPetId}`,
             formDataToSend,
             {
               headers: {
@@ -440,7 +441,7 @@ const Pets: React.FC = () => {
           );
 
           const response = await axios.put(
-            `${import.meta.env.VITE_API_URL}/pets/alter-pets/${editingPetId}`,
+            `${API_BASE_URL}/pets/alter-pets/${editingPetId}`,
             updateData,
             {
               headers: {
@@ -496,7 +497,7 @@ const Pets: React.FC = () => {
         rua: location.rua
       });
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/pets/fileup`, formDataToSend, {
+      const response = await axios.post(`${API_BASE_URL}/pets/fileup`, formDataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
@@ -522,7 +523,7 @@ const Pets: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/delete-pets/${selectedPet.id}`, {
+      const response = await fetch(`${API_BASE_URL}/pets/delete-pets/${selectedPet.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -5,6 +5,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import './Pets.css';
 import dayjs from 'dayjs';
 import { useAuth } from '../contexts/AuthContext';
+import { API_BASE_URL } from '../config/api';
 
 interface Pet {
   id: string;
@@ -46,7 +47,7 @@ const PetsSimilares: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/similares/${petId}?maxDistance=${maxDistance}&limite=${limite}&tipo=${tipo}`, {
+        const response = await fetch(`${API_BASE_URL}/pets/similares/${petId}?maxDistance=${maxDistance}&limite=${limite}&tipo=${tipo}`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

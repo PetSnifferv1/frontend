@@ -7,6 +7,7 @@ import './Pets.css';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 interface Pet {
   id: string;
@@ -59,7 +60,7 @@ const SearchByLocation: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/pets/search-by-location?lat=${latitude}&lng=${longitude}&radius=${radius}`
+        `${API_BASE_URL}/pets/search-by-location?lat=${latitude}&lng=${longitude}&radius=${radius}`
       );
       if (response.ok) {
         const data = await response.json();

@@ -6,6 +6,7 @@ import './Pets.css';
 import dayjs from "dayjs";
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 interface Pet {
   id: string;
@@ -32,14 +33,14 @@ const PublicPets: React.FC = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedFoto, setSelectedFoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  console.log(import.meta.env.VITE_API_URL);
+  console.log(API_BASE_URL);
   
 
   const fetchPets = async () => {
-    console.log(import.meta.env.VITE_API_URL);
+    console.log(API_BASE_URL);
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/pets/public-pets`);
+      const response = await fetch(`${API_BASE_URL}/pets/public-pets`);
       
       if (response.ok) {
         const data = await response.json();
